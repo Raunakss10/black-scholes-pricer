@@ -1,0 +1,39 @@
+import streamlit as st
+import numpy as np
+from scipy.stats import norm
+
+def black_scholes_price(S,K,T,r,sd,option):
+    # S = Current stock price
+    # K = Strike price
+    # T = Time to maturity (in years)
+    # r = Risk-free interest rate (continuous compounding)
+    # sd = Volatility of the stock (standard deviation of returns)
+    # option = type either call or put
+
+    d1 = (np.log(S/K) + (r +.5*(sd**2))*T) /(sd * (T**.5))
+    d2 = d1 - sd * (T**.5)
+    nd1 = norm.cdf(d1)
+    nd2 = norm.cdf(d2) 
+
+    if option.lower() == 'call':
+        price = S * nd1 - K * np.exp(-r * T) * nd2
+        return 'The call option price is: ' + str(price)
+
+    elif option.lower() == 'put':
+        price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+        return 'The put option price is: ' + str(price)
+    else:
+        return 'Invalid input please enter call or put'
+
+
+
+S = st.number_input("Current Stock Price (S)", min_value=0.01, value=100.0)
+K = st.number_input("Strike Price (K)", min_value=0.01, value=100.0)
+T = st.number_input("Time to Expiry (T in years)", min_value=0.01, value=1.0)
+r = st.number_input("Risk-Free Interest Rate (r)", min_value=0.0, value=0.05)
+sd = st.number_input("Volatility (σ)", min_value=0.01, value=0.2)
+option=  st.radio("Option Type", ("call", "put"))
+
+price = black_scholes_price(S, K, T, r, sd, option)
+st.write(f"**The {option} option price is:** ${price:.2f}")
+
